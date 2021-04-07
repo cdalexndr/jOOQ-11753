@@ -5,10 +5,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.TimeZone;
@@ -61,6 +65,29 @@ public class JavaTest extends AbstractTest {
                 .from(TEST)
                 .fetchOne(rawUpdateCol);
         assertEqualsTime(read, now);
+    }
+
+    @Test
+    public void testLocalDateTimeTimezone() throws SQLException {
+        Instant utcDbTime = Instant.parse("2007-12-03T10:15:30.00Z");
+        String utcDbTimeText = "2007-12-03 10:15:30.00";
+        try (PreparedStatement s = connection
+                .prepareStatement("insert into test (update) values (?::timestamp)")) {
+            s.setObject(1, utcDbTimeText);
+            s.execute();
+        }
+        TestRecord result = ctx.selectFrom(TEST).fetchOne();
+        //result now contains UTC date "2007-12-03 10:15:30.00"
+
+        Instant before = utcDbTime.minusSeconds(60);
+        OffsetDateTime offsetDateTime = before.atOffset(ZoneOffset.ofHours(getHoursTzOffset()));
+        LocalDateTime local = offsetDateTime.toLocalDateTime();
+        //local is "2007-12-03T13:14:30" because it was offseted by the default timezone
+        int count = ctx.selectCount()
+                .from(TEST)
+                .where(TEST.UPDATE.gt(local))
+                .fetchOne().component1();
+        assertEquals(count, 1);
     }
 
     @Test
