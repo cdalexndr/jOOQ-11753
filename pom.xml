@@ -16,9 +16,9 @@
         <org.jooq.version>3.14.4</org.jooq.version>
 
         <!-- TODO: Change the database driver configuration here and also in AbstractTest for the tests -->
-        <db.url>jdbc:h2:~/mcve</db.url>
-        <db.username>sa</db.username>
-        <db.password></db.password>
+        <db.url>jdbc:postgresql://localhost:5432/postgres?currentSchema=mcve</db.url>
+        <db.username>postgres</db.username>
+        <db.password>postgres</db.password>
 
         <!-- TODO: Fix Java, kotlin, or scala versions -->
         <java.version>11</java.version>
@@ -30,9 +30,9 @@
 
         <!-- TODO: Add your JDBC driver dependency here -->
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>1.4.200</version>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.15</version>
         </dependency>
 
         <!-- Database access -->
@@ -233,6 +233,8 @@
                     <url>${db.url}</url>
                     <user>${db.username}</user>
                     <password>${db.password}</password>
+                    <schemas>mcve</schemas>
+<!--                    <baselineOnMigrate>true</baselineOnMigrate>-->
                     <locations>
                         <location>filesystem:src/main/resources/db/migration</location>
                     </locations>
